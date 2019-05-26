@@ -2,7 +2,6 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import itertools
 
-
 def draw_graph():
     graph = nx.Graph()
     edges_arr = [(0, 1), (1, 2), (2, 3), (3, 4), (3, 1)]
@@ -42,9 +41,23 @@ def numerate_from_root(graph: nx.Graph, source: int):
 
 
 def list_subsets_of_given_size(set, size: int):
-    list_subsets = list(itertools.combinations(set, size)) 
+    list_subsets = list(itertools.combinations(set, size))
     for l in list_subsets:
         yield l
+
+
+def are_disjoint(t1: tuple, t2: tuple):
+    s1 = set(t1)
+    s2 = set(t2)
+    return s1.isdisjoint(s2)
+
+
+def pairs_of_sets(set, size):
+    list_subsets = list(list_subsets_of_given_size(set, size))
+    pairs = list(itertools.combinations(list_subsets, 2))
+    pairs = [p for p in pairs if are_disjoint(p[0], p[1])]
+    for p in pairs:
+        yield p
 
 
 if __name__ == "__main__":
@@ -56,5 +69,5 @@ if __name__ == "__main__":
         ]
     )
     print(list(numerate_from_root(graph, 0)))
-    print(list(list_subsets_of_given_size(list(numerate_from_root(graph, 0)), 
-            3)))
+    # print(list(list_subsets_of_given_size(list(numerate_from_root(graph, 0)), 3)))
+    print(list(pairs_of_sets(list(numerate_from_root(graph, 0)), 3)))
