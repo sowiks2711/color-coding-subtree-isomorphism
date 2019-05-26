@@ -8,6 +8,7 @@ def draw_graph():
     graph.add_edges_from(edges_arr)
     colors = range(len(edges_arr))
     nx.draw(graph, node_color=colors, cmap=plt.cm.gist_rainbow)
+
     plt.show()
 
 
@@ -34,5 +35,18 @@ def has_any_cycles(graph: nx.Graph) -> bool:
     return False
 
 
+def numerate_from_root(graph: nx.Graph, source: int):
+    top_down = nx.bfs_tree(graph, source=source)
+    for g in list(top_down):
+        yield (abs(len(graph)-g-1))
+
+
 if __name__ == "__main__":
     draw_graph()
+    graph = nx.Graph()
+    graph.add_edges_from(
+        [
+            (1, 0), (1, 2), (0, 3), (0, 4), (2, 5)
+        ]
+    )
+    print(list(numerate_from_root(graph, 0)))
