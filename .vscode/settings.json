@@ -1,0 +1,8 @@
+{
+    "python.pythonPath": ".env/bin/python",
+    "python.linting.pylintArgs": ["--dissable=C0111"],
+    "python.linting.pylintEnabled": true,
+    "python.linting.flake8Enabled": true,
+    "python.linting.mypyEnabled": true,
+    "python.linting.lintOnSave": true,
+}
