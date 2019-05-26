@@ -6,10 +6,11 @@ def draw_graph():
     graph = nx.Graph()
     graph.add_edges_from(
         [
-            (0, 1), (1, 2), (2, 3), (3, 4), (3, 1)
+            (0, 1), (0, 2), (1, 3), (1, 4), (2, 5)
         ]
     )
-    nx.draw(graph, node_color=range(4), cmap=plt.cm.gist_rainbow)
+    nx.draw(graph, node_color=range(len(graph)), cmap=plt.cm.gist_rainbow,
+            with_labels=True)
     plt.show()
 
 
@@ -36,5 +37,18 @@ def has_any_cycles(graph: nx.Graph) -> bool:
     return False
 
 
+def numerate_from_root(graph: nx.Graph, source: int):
+    top_down = nx.bfs_tree(graph, source=source)
+    for g in list(top_down):
+        yield (abs(len(graph)-g-1))
+
+
 if __name__ == "__main__":
     draw_graph()
+    graph = nx.Graph()
+    graph.add_edges_from(
+        [
+            (1, 0), (1, 2), (0, 3), (0, 4), (2, 5)
+        ]
+    )
+    print(list(numerate_from_root(graph, 0)))
