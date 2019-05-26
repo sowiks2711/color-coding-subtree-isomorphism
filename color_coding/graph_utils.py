@@ -1,6 +1,8 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 import itertools
+from typing import Set, Tuple, Iterator
+
 
 def draw_graph():
     graph = nx.Graph()
@@ -52,12 +54,11 @@ def are_disjoint(t1: tuple, t2: tuple):
     return s1.isdisjoint(s2)
 
 
-def pairs_of_sets(set, size):
-    list_subsets = list(list_subsets_of_given_size(set, size))
-    pairs = list(itertools.combinations(list_subsets, 2))
-    pairs = [p for p in pairs if are_disjoint(p[0], p[1])]
-    for p in pairs:
-        yield p
+def pairs_of_sets(color_set: Set[int], size: int,
+                  size2: int) -> Iterator[Tuple[Set[int], Set[int]]]:
+    for s in list_subsets_of_given_size(color_set, size):
+        for ss in list_subsets_of_given_size(set(color_set) - set(s), size2):
+            yield s, ss
 
 
 if __name__ == "__main__":
@@ -69,5 +70,4 @@ if __name__ == "__main__":
         ]
     )
     print(list(numerate_from_root(graph, 0)))
-    # print(list(list_subsets_of_given_size(list(numerate_from_root(graph, 0)), 3)))
-    print(list(pairs_of_sets(list(numerate_from_root(graph, 0)), 3)))
+    print(list(pairs_of_sets(set(numerate_from_root(graph, 0)), 7, 1)))
