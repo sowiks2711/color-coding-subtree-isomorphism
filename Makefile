@@ -6,7 +6,7 @@
 
 PROJECT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 PROJECT_NAME = sentinel_connectors
-PYTHON_INTERPRETER = python3.6
+PYTHON_INTERPRETER = python3.6.7
 VENV_NAME = .env
 
 #################################################################################
@@ -27,8 +27,8 @@ clean:
 
 ## Lint using flake8 nad check types using mypy
 lint:
-	flake8 sentinel_connectors
-	mypy sentinel_connectors --ignore-missing-imports
+	flake8 color_coding
+	mypy color_coding --ignore-missing-imports
 
 ## Create virtual environment:
 create_environment:
@@ -42,32 +42,7 @@ tests:
 # PROJECT RULES                                                                 #
 #################################################################################
 
-SINK ?= kafka
-all:;: '$(SINK)'
 
-reddit_sample:
-	$(PYTHON_INTERPRETER) run_connector.py stream --source reddit --sink $(SINK)
-
-reddit_historical_sample:
-	$(PYTHON_INTERPRETER) run_connector.py historical --source reddit --keywords madagascar --since 2019-04-19 --until 2019-04-20 --sink $(SINK)
-
-hn_sample:
-	$(PYTHON_INTERPRETER) run_connector.py stream --source hacker-news --sink $(SINK)
-
-hn_historical_sample:
-	$(PYTHON_INTERPRETER) run_connector.py historical --source hacker-news --keywords microsoft --since 2019-04-19 --until 2019-04-20 --sink $(SINK)
-
-gn_sample:
-	$(PYTHON_INTERPRETER) run_connector.py stream --source google-news --sink $(SINK)
-
-gn_historical_sample:
-	$(PYTHON_INTERPRETER) run_connector.py historical --source google-news --keywords microsoft --since $(shell date +'%Y-%m-%d' --date='-1 day') --until $(shell date +'%Y-%m-%d') --sink $(SINK)
-
-twitter_sample:
-	$(PYTHON_INTERPRETER) run_connector.py stream  --source twitter --sink $(SINK)
-
-twitter_historical_sample:
-	$(PYTHON_INTERPRETER) run_connector.py historical --source twitter --keywords nike --since $(shell date +'%Y-%m-%d' --date='-1 day') --until $(shell date +'%Y-%m-%d') --sink $(SINK)
 
 #################################################################################
 # Self Documenting Commands                                                     #
