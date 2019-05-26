@@ -1,5 +1,6 @@
 import networkx as nx
 import matplotlib.pyplot as plt
+import itertools
 
 
 def draw_graph():
@@ -34,5 +35,26 @@ def has_any_cycles(graph: nx.Graph) -> bool:
     return False
 
 
+def numerate_from_root(graph: nx.Graph, source: int):
+    top_down = nx.bfs_tree(graph, source=source)
+    for g in list(top_down):
+        yield (abs(len(graph)-g-1))
+
+
+def list_subsets_of_given_size(set, size: int):
+    list_subsets = list(itertools.combinations(set, size)) 
+    for l in list_subsets:
+        yield l
+
+
 if __name__ == "__main__":
     draw_graph()
+    graph = nx.Graph()
+    graph.add_edges_from(
+        [
+            (0, 6), (0, 2), (0, 3), (0, 4), (0, 5), (6, 1), (6, 7)
+        ]
+    )
+    print(list(numerate_from_root(graph, 0)))
+    print(list(list_subsets_of_given_size(list(numerate_from_root(graph, 0)), 
+            3)))
