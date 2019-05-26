@@ -36,6 +36,26 @@ def has_any_cycles(graph: nx.Graph) -> bool:
     return False
 
 
+def nodes_connected(graph: nx.Graph, u: int, v: int):
+    return u in graph.neighbors(v)
+
+
+def get_subtree_rooted_in_T(graph: nx.Graph, root: int):
+    order = list(numerate_from_root(graph, 0))
+    output = []
+    operational = []
+    output.append(root)
+    operational.append(root)
+    while len(operational) != 0:
+        currRoot = operational.pop(0)
+        for n in graph.neighbors(currRoot):
+            if order.index(n) < order.index(currRoot):
+                output.append(n)
+                operational.append(n)
+    for n in output:
+        yield n
+
+
 def numerate_from_root(graph: nx.Graph, source: int):
     top_down = nx.bfs_tree(graph, source=source)
     for g in list(top_down):
@@ -66,8 +86,9 @@ if __name__ == "__main__":
     graph = nx.Graph()
     graph.add_edges_from(
         [
-            (0, 6), (0, 2), (0, 3), (0, 4), (0, 5), (6, 1), (6, 7)
+            (0, 1), (0, 2), (1, 3), (1, 4), (2, 5), (2, 6)
         ]
     )
     print(list(numerate_from_root(graph, 0)))
-    print(list(pairs_of_sets(set(numerate_from_root(graph, 0)), 7, 1)))
+    # print(list(pairs_of_sets(set(numerate_from_root(graph, 0)), 7, 1)))
+    print(list(get_subtree_rooted_in_T(graph, 2)))
