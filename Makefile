@@ -6,7 +6,7 @@
 
 PROJECT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 PROJECT_NAME = sentinel_connectors
-PYTHON_INTERPRETER = python3.6.7
+PYTHON_INTERPRETER = python3.7
 VENV_NAME = .env
 
 #################################################################################

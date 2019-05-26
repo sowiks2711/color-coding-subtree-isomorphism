@@ -4,12 +4,10 @@ import matplotlib.pyplot as plt
 
 def draw_graph():
     graph = nx.Graph()
-    graph.add_edges_from(
-        [
-            (0, 1), (1, 2), (2, 3), (3, 4), (3, 1)
-        ]
-    )
-    nx.draw(graph, node_color=range(4), cmap=plt.cm.gist_rainbow)
+    edges_arr = [(0, 1), (1, 2), (2, 3), (3, 4), (3, 1)]
+    graph.add_edges_from(edges_arr)
+    colors = range(len(edges_arr))
+    nx.draw(graph, node_color=colors, cmap=plt.cm.gist_rainbow)
     plt.show()
 
 
