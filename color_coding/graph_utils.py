@@ -46,9 +46,4 @@ def numerate_from_root(graph: nx.Graph, source: int):
 if __name__ == "__main__":
     draw_graph()
     graph = nx.Graph()
-    graph.add_edges_from(
-        [
-            (1, 0), (1, 2), (0, 3), (0, 4), (2, 5)
-        ]
-    )
-    print(list(numerate_from_root(graph, 0)))
+    numerate_from_root(graph, 0)
