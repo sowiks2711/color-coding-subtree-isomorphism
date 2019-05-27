@@ -3,7 +3,6 @@ import networkx as nx
 from random import randint
 from math import exp
 from graph_utils import numerate_from_root, draw_graph
-from graph_utils import get_subtree_rooted_in_T
 import itertools
 from typing import List
 
