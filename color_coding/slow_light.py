@@ -110,3 +110,19 @@ if __name__ == "__main__":
     draw_graph(graph)
     draw_graph(graph2)
     print(findTreeInGraph(graph, graph2))
+    graph = nx.Graph()
+    graph.add_edges_from(
+        [
+            (0, 1), (0, 2), (1, 3), (1, 4), (3, 7), (3, 8), (2, 5), (2, 6),
+            (5, 9), (5, 10), (6, 11), (6, 12)
+        ]
+    )
+    graph2 = nx.Graph()
+    graph2.add_edges_from(
+        [
+            (0, 1), (0, 2), (2, 3)
+        ]
+    )
+    draw_graph(graph)
+    draw_graph(graph2)
+    print(findTreeInGraph(graph, graph2))

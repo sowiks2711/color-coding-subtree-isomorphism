@@ -6,7 +6,8 @@ from typing import Set, Tuple, Iterator
 
 def draw_graph(graph: nx.Graph):
     colors = range(graph.number_of_nodes())
-    nx.draw(graph, node_color=colors, cmap=plt.cm.gist_rainbow)
+    nx.draw(graph, node_color=colors, cmap=plt.cm.gist_rainbow, 
+            with_labels=True)
     plt.show()
 
 
