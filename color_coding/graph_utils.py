@@ -55,8 +55,8 @@ def get_subtree_rooted_in_T(graph: nx.Graph, root: int):
 
 def numerate_from_root(graph: nx.Graph, source: int):
     top_down = nx.bfs_tree(graph, source=source)
-    for g in list(top_down):
-        yield (abs(len(graph)-g-1))
+    for g in reversed(list(top_down)):
+        yield g
 
 
 def list_subsets_of_given_size(set, size: int):
