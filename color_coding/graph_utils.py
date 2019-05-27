@@ -4,11 +4,8 @@ import itertools
 from typing import Set, Tuple, Iterator
 
 
-def draw_graph():
-    graph = nx.Graph()
-    edges_arr = [(0, 1), (1, 2), (2, 3), (3, 4), (3, 1)]
-    graph.add_edges_from(edges_arr)
-    colors = range(len(edges_arr))
+def draw_graph(graph: nx.Graph):
+    colors = range(graph.number_of_nodes())
     nx.draw(graph, node_color=colors, cmap=plt.cm.gist_rainbow)
     plt.show()
 
@@ -82,7 +79,7 @@ def pairs_of_sets(color_set: Set[int], size: int,
 
 
 if __name__ == "__main__":
-    draw_graph()
+    # draw_graph()
     graph = nx.Graph()
     graph.add_edges_from(
         [
