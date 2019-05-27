@@ -1,17 +1,47 @@
-from networkx import Graph
-from typing import List
+import networkx as nx
+from typing import List, Iterator
 import numpy as np
 from .graph_utils import (
-    get_direct_children,
     list_subsets_of_given_size,
     pairs_of_sets,
-    count_all_children,
-    numerate_from_leafs_to_root
 )
 
 
-def find_isomorhic_subtree(graph: Graph,
-                           tree: Graph,
+def get_direct_children(tree: nx.Graph, nodes_order: List[int],
+                        node: int) -> Iterator[int]:
+    for v in tree.neighbors(node):
+        if nodes_order[node] > nodes_order[v]:
+            yield v
+
+
+def count_all_children(tree: nx.Graph, nodes_order: List[int],
+                       root: int) -> List[int]:
+    """
+    returns list of counts of descendants for every node in tree 
+    by the direction given by root node
+    """
+    nodes_order = list(nodes_order)
+    children_count = [0]*len(tree)
+    for v in nodes_order:
+        vo = v
+
+        count = 0
+        for nv in tree.neighbors(vo):
+            if nodes_order.index(nv) < nodes_order.index(vo):
+                count = count + 1 + children_count[nv]
+        children_count[vo] = count
+
+    return children_count
+
+
+def numerate_from_leafs_to_root(graph: nx.Graph, root: int) -> Iterator[int]:
+    top_down = nx.bfs_tree(graph, source=root)
+    for g in reversed(list(top_down)):
+        yield g
+
+
+def find_isomorhic_subtree(graph: nx.Graph,
+                           tree: nx.Graph,
                            graph_colors: List[int]) -> np.array:
 
     colors = list(range(len(tree)))
@@ -58,3 +88,15 @@ def find_isomorhic_subtree(graph: Graph,
             t_size = t_size + t_child_size    
     print(iso_subtree[frozenset(colors)])
     return iso_subtree
+
+    # # labels = range(len(graph.nodes))
+    # labels = list(numerate_from_root(graph, 0))
+    # print(f"labels: {labels}")
+    # labels_dict = {}
+    # for l, i in zip(labels, range(len(graph))):
+    #     labels_dict[l] = i
+    # print(labels_dict)
+    # print(graph.nodes)
+    # nx.draw(graph, node_color=range(len(graph)), labels=labels_dict)
+    # plt.show()
+    # print(labels)
