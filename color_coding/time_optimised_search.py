@@ -1,10 +1,11 @@
 import networkx as nx
-from typing import List, Iterator
+from typing import List, Iterator, Dict, FrozenSet
 import numpy as np
 from .graph_utils import (
     list_subsets_of_given_size,
     pairs_of_sets,
 )
+from collections import deque
 
 
 def get_direct_children(tree: nx.Graph, nodes_order: List[int],
@@ -40,54 +41,116 @@ def numerate_from_leafs_to_root(graph: nx.Graph, root: int) -> Iterator[int]:
         yield g
 
 
+def initialize_memory_array(graph, graph_colors, tree):
+    iso_subtree = {}
+    for v in graph.nodes:
+        if frozenset([graph_colors[v]]) not in iso_subtree:
+            match_array = np.zeros((len(tree), len(graph)), dtype=bool)
+            iso_subtree[frozenset([graph_colors[v]])] = match_array
+        for t in tree.nodes:
+            match_array[t, v] = True
+    return iso_subtree
+
+
 def find_isomorhic_subtree(graph: nx.Graph,
                            tree: nx.Graph,
                            graph_colors: List[int]) -> np.array:
 
     colors = list(range(len(tree)))
-    print(colors)
-    print(tree.nodes)
-    iso_subtree = {}
-    len_t = len(tree)
-    len_g = len(graph)
     tree_nodes_order = list(numerate_from_leafs_to_root(tree, 0))
     childrens_count = count_all_children(tree, tree_nodes_order, 0)
-    print(tree_nodes_order)
-    for v in graph.nodes:
-        match_array = np.zeros((len_t, len_g), dtype=bool)
-        iso_subtree[frozenset([graph_colors[v]])] = match_array
-        for t in tree.nodes:
-            match_array[t, v] = True
-
-    for t in tree_nodes_order:
-        t_size = 1
-        t_children = list(get_direct_children(tree, tree_nodes_order, t))
-        for tc in t_children:
-            t_child_size = childrens_count[tc] + 1
-            for sc in list_subsets_of_given_size(colors, t_size + t_child_size):
-                for v in graph.nodes:
-                    for s_prim, s_bis in pairs_of_sets(sc,
-                                                       t_size,
-                                                       t_child_size):
-                        for vn in graph.neighbors(v):
-                            fs_prim = frozenset(s_prim)
-                            fs_bis = frozenset(s_bis)
-                            if fs_prim not in iso_subtree or \
-                               fs_bis not in iso_subtree:
-                                continue
-                            is_first_colorable = iso_subtree[fs_prim][t, v]
-                            is_second_colorable = iso_subtree[fs_bis][tc, vn]
-                            if is_first_colorable and is_second_colorable:
-                                fs = frozenset(sc)
-                                if fs not in iso_subtree:
-                                    match_array = np.zeros((len_t, len_g),
-                                                           dtype=bool)
-                                    iso_subtree[fs] = match_array
-                                iso_subtree[fs][t, v] = True
-                                break
-            t_size = t_size + t_child_size    
+    iso_subtree = initialize_memory_array(graph, graph_colors, tree)
+    for subt_index in tree_nodes_order:
+        cur_subt_size = 1
+        t_children_gen = get_direct_children(tree, tree_nodes_order,
+                                             subt_index)
+        for include_subt in t_children_gen:
+            include_subt_size = childrens_count[include_subt] + 1
+            find_colored_iso_subtree(colors, cur_subt_size,
+                                     include_subt_size,
+                                     graph, iso_subtree,
+                                     subt_index, include_subt, tree)
+            cur_subt_size = cur_subt_size + include_subt_size
+    print(f"Algorithm checked {len(iso_subtree.keys())} subsets")
+    print(iso_subtree)
     print(iso_subtree[frozenset(colors)])
     return iso_subtree
+
+
+def find_colored_iso_subtree(colors, cur_subt_size, include_subt_size, graph,
+                             iso_subtree, subt_index, include_subt, tree):
+    colors_nb = cur_subt_size + include_subt_size
+    for avail_cols in list_subsets_of_given_size(colors,
+                                                 colors_nb):
+        for subt_cols, include_subt_cols in pairs_of_sets(avail_cols,
+                                                              cur_subt_size,
+                                                              include_subt_size):
+            if subt_cols not in iso_subtree or \
+                include_subt_cols not in iso_subtree:
+                continue
+            for v in graph.nodes:
+                for vn in graph.neighbors(v):
+                    is_first_colorable = iso_subtree[subt_cols][subt_index, v]
+                    is_second_colorable = iso_subtree[include_subt_cols][include_subt, vn]
+                    if is_first_colorable and is_second_colorable:
+                        if avail_cols not in iso_subtree:
+                            match_array = np.zeros((len(tree),
+                                                    len(graph)),
+                                                   dtype=bool)
+                            iso_subtree[avail_cols] = match_array
+                        iso_subtree[avail_cols][subt_index, v] = True
+                        break
+
+
+def restore_iso_subtree(iso_subtree: Dict[FrozenSet, np.array], tree: nx.Graph,
+                        graph: nx.Graph, coloring: List[int]) -> List[int]:
+    # Change to auxiliary dict with list of all pointer vertices to given subtree.
+    tree_queue = deque([0])
+    colors = set(list(range(len(tree))))
+    all_colors = frozenset(list(range(len(tree))))
+    g_root = list(iso_subtree[all_colors][0, :]).index(True)
+    graph_queue = deque([g_root])
+    mapping = [0] * len(tree)
+    tree_nodes_order = list(numerate_from_leafs_to_root(tree, 0))
+    childrens_count = count_all_children(tree, tree_nodes_order, 0)
+    while(len(tree_queue) > 0):
+        find_mapped_neighbours(tree_queue, graph_queue, mapping, colors,
+                               coloring, tree, tree_nodes_order,
+                               childrens_count, iso_subtree, graph)
+    return mapping
+
+
+def find_mapped_neighbours(tree_queue, graph_queue, mapping, colors, coloring,
+                           tree, tree_nodes_order, childrens_count,
+                           iso_subtree, graph):
+    breakpoint()
+    vt = tree_queue.popleft()
+    vg = graph_queue.popleft()
+    mapping[vt] = vg
+    colors.discard(coloring[vg])
+
+    def children_criterion(v):
+        return childrens_count[v]
+    dir_children = list(get_direct_children(tree, tree_nodes_order, vt))
+    dir_children.sort(key=children_criterion)
+    for nt in dir_children:
+        tree_queue.append(nt)
+        find_mapping(colors, childrens_count, nt, iso_subtree,
+                     graph, vg, graph_queue, mapping)
+
+
+def find_mapping(colors, childrens_count, nt, iso_subtree, graph,
+                 vg, graph_queue, mapping):
+    for subset in list_subsets_of_given_size(colors, childrens_count[nt] + 1):
+        if subset in iso_subtree:
+            for ng in graph.neighbors(vg):
+                if ng not in set(mapping) and iso_subtree[subset][nt, ng]:
+                    breakpoint()
+                    graph_queue.append(ng)
+                    return
+    raise AssertionError()
+
+
 
     # # labels = range(len(graph.nodes))
     # labels = list(numerate_from_root(graph, 0))
