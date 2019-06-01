@@ -39,19 +39,20 @@ if __name__ == "__main__":
             cmap=plt.cm.gist_rainbow)
     plt.subplot(132)
     nx.draw(tree, labels=tree_labels_dict)
-    iso_subtree = find_isomorhic_subtree(graph, tree, colors)
-    # mapping = restore_iso_subtree(iso_subtree, tree, graph, colors)
+    iso_subtree, mapping_restore = find_isomorhic_subtree(graph, tree, colors)
+    mapping = restore_iso_subtree(iso_subtree, tree, graph, colors,
+                                  mapping_restore)
     #breakpoint()
-    # print(mapping)
-    # result_labels = {}
-    # for v in graph.nodes:
-    #     if v in mapping
-    #         result_labels[v] = mapping.index(v)
-    #     else:
-    #         result_labels[v] = -1
+    print(mapping)
+    result_labels = {}
+    for v in graph.nodes:
+        if v in mapping:
+            result_labels[v] = mapping.index(v)
+        else:
+            result_labels[v] = -1
 
     plt.subplot(133)
-    nx.draw(graph, node_color=colors, #labels=result_labels,
+    nx.draw(graph, node_color=colors, labels=result_labels,
             cmap=plt.cm.gist_rainbow)
 
     plt.show()
