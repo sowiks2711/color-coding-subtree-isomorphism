@@ -16,6 +16,27 @@ class Coloring:
         self.graph = graph
 
 
+def TraverseToLeaf(G: nx.Graph, T: nx.Graph, isoSubtree: List, v: int, xT: int,
+                   mapping: List, order: List):
+    mapping[xT] = v
+    for xN in T.neighbors(xT):
+        if order.index(xN) < order.index(xT):
+            for vN in G.neighbors(v):
+                if isoSubtree[xN][vN]:
+                    mapping = TraverseToLeaf(G, T, isoSubtree, vN, xN, mapping, 
+                                             order)
+                    break
+    return mapping
+
+
+def getGraphBack(G: nx.Graph, T: nx.Graph, isoSubTree: List, order: List):
+    mapping = [-1 for i in range(T.number_of_nodes())]
+    vN = isoSubTree[0].index(True)
+    xN = 0
+    mapping = TraverseToLeaf(G, T, isoSubTree, vN, xN, mapping, order)
+    return mapping
+
+
 def CheckColoring(treeColoring: Coloring, treeRoot: int,
                   gPrim: Coloring, v: int, isoSubTree, order: List) -> bool:
     # order = list(numerate_from_root(treeColoring.graph, treeRoot))
@@ -42,8 +63,7 @@ def CheckColoring(treeColoring: Coloring, treeRoot: int,
 
 
 def checkIfTreeExist(gPrim: Coloring, T: nx.Graph,
-                     isoSubTree: List):
-    order = list(numerate_from_root(T, 0))
+                     isoSubTree: List, order: List):
     for coloring in getNextColoring(T):
         for t in order:
             for v in gPrim.graph.nodes():
@@ -62,6 +82,7 @@ def getNextColoring(tree: nx.Graph):
 def findTreeInGraph(G: nx.Graph, T: nx.Graph):
     if G.number_of_nodes() < T.number_of_nodes():
         return False
+    order = list(numerate_from_root(T, 0))
     k = (T.number_of_nodes())
     attempts = int(exp(k+2))
     # K = []
@@ -73,53 +94,29 @@ def findTreeInGraph(G: nx.Graph, T: nx.Graph):
         randomColoringList = [randint(0, k) for i in
                               range((G.number_of_nodes()))]
         gPrim = Coloring(randomColoringList, G)
-        isoSubTree = checkIfTreeExist(gPrim, T, isoSubTree)
+        isoSubTree = checkIfTreeExist(gPrim, T, isoSubTree, order)
 
         for i in isoSubTree[0]:
             if i:
+                mapping = getGraphBack(G, T, isoSubTree, order)
+                print("@@@Printing Mapping@@@")
+                for m in mapping:
+                    print(m)
                 return True
     return False
 
 
 if __name__ == "__main__":
-  
-    # graph.add_edges_from(
-    #     [
-    #         (0, 1), (0, 2), (0, 3), (3, 1), (1, 2), (4, 2), (5, 2), (5, 6)
-    #     ]
-    # )
-    # graph2 = nx.Graph()
-    # graph2.add_edges_from(
-    #     [
-    #         (0, 1), (1, 2), (0, 3), (0, 4), (0, 5), (0, 6)
-    #     ]
-    # )
     graph = nx.Graph()
     graph.add_edges_from(
         [
-            (0, 1), (0, 2), (0, 3), (0, 4)
+            (0, 1), (0, 2), (1, 3)
         ]
     )
     graph2 = nx.Graph()
     graph2.add_edges_from(
         [
-            (0, 1), (1, 2), (2, 3), (3, 4)
-        ]
-    )
-    draw_graph(graph)
-    draw_graph(graph2)
-    print(findTreeInGraph(graph, graph2))
-    graph = nx.Graph()
-    graph.add_edges_from(
-        [
-            (0, 1), (0, 2), (1, 3), (1, 4), (3, 7), (3, 8), (2, 5), (2, 6),
-            (5, 9), (5, 10), (6, 11), (6, 12)
-        ]
-    )
-    graph2 = nx.Graph()
-    graph2.add_edges_from(
-        [
-            (0, 1), (0, 2), (2, 3)
+            (0, 1), (0, 2)
         ]
     )
     draw_graph(graph)
