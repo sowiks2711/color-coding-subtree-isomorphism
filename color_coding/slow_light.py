@@ -2,7 +2,7 @@ import networkx as nx
 # import matplotlib.pyplot as plt
 from random import randint
 from math import exp
-from graph_utils import numerate_from_root, draw_graph
+from graph_utils import numerate_from_root, draw_graph, draw_result
 import itertools
 from typing import List
 
@@ -100,8 +100,7 @@ def findTreeInGraph(G: nx.Graph, T: nx.Graph):
             if i:
                 mapping = getGraphBack(G, T, isoSubTree, order)
                 print("@@@Printing Mapping@@@")
-                for m in mapping:
-                    print(m)
+                draw_result(G, mapping)
                 return True
     return False
 
@@ -110,13 +109,13 @@ if __name__ == "__main__":
     graph = nx.Graph()
     graph.add_edges_from(
         [
-            (0, 1), (0, 2), (1, 3)
+            (0, 1), (0, 2), (1, 3), (0, 4)
         ]
     )
     graph2 = nx.Graph()
     graph2.add_edges_from(
         [
-            (0, 1), (0, 2)
+            (0, 1), (0, 2), (2, 3)
         ]
     )
     draw_graph(graph)

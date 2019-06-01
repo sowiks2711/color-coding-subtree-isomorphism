@@ -1,13 +1,25 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 import itertools
-from typing import Set, Tuple, Iterator
+from typing import Set, Tuple, Iterator, List
 
 
 def draw_graph(graph: nx.Graph):
     colors = range(graph.number_of_nodes())
     nx.draw(graph, node_color=colors, cmap=plt.cm.gist_rainbow, 
             with_labels=True)
+    plt.show()
+
+
+def draw_result(graph: nx.Graph, color: List):
+    pos = nx.spring_layout(graph)
+    allN = range(graph.number_of_nodes())
+    rest = set(allN) - set(color)
+    restL = list(rest)
+    nx.draw_networkx_nodes(graph, pos, nodelist=color, node_color='r')
+    nx.draw_networkx_nodes(graph, pos, nodelist=restL, node_color='b')
+    nx.draw_networkx_edges(graph, pos)
+    nx.draw_networkx_labels(graph, pos)
     plt.show()
 
 
