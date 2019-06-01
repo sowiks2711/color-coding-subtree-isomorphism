@@ -2,9 +2,10 @@ import networkx as nx
 # import matplotlib.pyplot as plt
 from random import randint
 from math import exp
-from graph_utils import numerate_from_root, draw_graph, draw_result
+from graph_utils import numerate_from_root, draw_graph_save, draw_result_save
 import itertools
 from typing import List
+import time
 
 
 class Coloring:
@@ -88,7 +89,6 @@ def findTreeInGraph(G: nx.Graph, T: nx.Graph):
     # K = []
     # K.append(Coloring(range(4), T))
     for i in range(attempts):
-        print(i)
         isoSubTree = [[False for x in range((G.number_of_nodes()))]
                       for y in range((T.number_of_nodes()))]
         randomColoringList = [randint(0, k) for i in
@@ -96,28 +96,33 @@ def findTreeInGraph(G: nx.Graph, T: nx.Graph):
         gPrim = Coloring(randomColoringList, G)
         isoSubTree = checkIfTreeExist(gPrim, T, isoSubTree, order)
 
-        for i in isoSubTree[0]:
-            if i:
+        for a in isoSubTree[0]:
+            if a:
                 mapping = getGraphBack(G, T, isoSubTree, order)
                 print("@@@Printing Mapping@@@")
-                draw_result(G, mapping)
+                draw_result_save(G, mapping, "result")
+                print("It took: " + str(i) + " attempts")
                 return True
     return False
 
 
 if __name__ == "__main__":
-    graph = nx.Graph()
-    graph.add_edges_from(
-        [
-            (0, 1), (0, 2), (1, 3), (0, 4)
-        ]
-    )
-    graph2 = nx.Graph()
-    graph2.add_edges_from(
-        [
-            (0, 1), (0, 2), (2, 3)
-        ]
-    )
-    draw_graph(graph)
-    draw_graph(graph2)
-    print(findTreeInGraph(graph, graph2))
+    print("@@@@Testy wydajnościowe@@@@")
+    graph = nx.random_lobster(10, 0.75, 0.75)
+    graph2 = nx.nonisomorphic_trees(4)
+    for g in graph2:
+        draw_graph_save(graph, "endurance_small")
+        draw_graph_save(g, "endurance_small")
+        start_time = time.time()
+        print(findTreeInGraph(graph, g))
+        print("It took " + str(time.time() - start_time) + " to calculate")
+
+    print("@@@@Testy wydajnościowe duże@@@@")
+    graph = nx.random_lobster(20, 0.75, 0.75)
+    graph2 = nx.nonisomorphic_trees(6)
+    for g in graph2:
+        draw_graph_save(graph, "endurance_small")
+        draw_graph_save(g, "endurance_small")
+        start_time = time.time()
+        print(findTreeInGraph(graph, g))
+        print("It took " + str(time.time() - start_time) + " to calculate")
