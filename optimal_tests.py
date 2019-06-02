@@ -1,4 +1,8 @@
 from color_coding.time_optimised_search import find_isomorhic_subtree, restore_iso_subtree
+from color_coding.time_optimised_alg import (
+    SubtreeAnalizerFactory,
+    SubtreeAnalizer
+)
 import networkx as nx
 import matplotlib.pyplot as plt
 
@@ -23,12 +27,15 @@ if __name__ == "__main__":
              (3, 4), (3, 5), (4, 5), (5, 6), (5, 7)
         ]
     )
-    # colors = [0, 1, 2, 3, 4, 5, 6, 1]
+    colors = [0, 1, 2, 0, 4, 0, 3, 1]
     # colors = [0, 1, 2, 3]
-    colors = list(range(len(tree))) + list(range(len(graph)-len(tree)))
+    # colors = list(range(len(tree))) + list(range(len(graph)-len(tree)))
+    analizer = SubtreeAnalizerFactory(tree, graph, colors).create(0)
+    mapping = analizer.find_subtree()
+    breakpoint()
     print(graph.nodes)
     graph_labels_dict = {}
-    for v in graph.nodes:
+    for v in sorted(graph.nodes):
         graph_labels_dict[v] = v
     tree_labels_dict = {}
     for v in tree.nodes:
@@ -39,9 +46,10 @@ if __name__ == "__main__":
             cmap=plt.cm.gist_rainbow)
     plt.subplot(132)
     nx.draw(tree, labels=tree_labels_dict)
-    iso_subtree, mapping_restore = find_isomorhic_subtree(graph, tree, colors)
-    mapping = restore_iso_subtree(iso_subtree, tree, graph, colors,
-                                  mapping_restore)
+
+    #iso_subtree, mapping_restore = find_isomorhic_subtree(graph, tree, colors)
+    #mapping = restore_iso_subtree(iso_subtree, tree, graph, colors,
+    #                              mapping_restore)
     #breakpoint()
     print(mapping)
     result_labels = {}

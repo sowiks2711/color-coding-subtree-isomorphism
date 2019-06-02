@@ -25,8 +25,8 @@ def test_count_all_children(edges_list, root, node, expected):
     graph_labels_dict = {}
     for v in g.nodes:
         graph_labels_dict[v] = v
-    nx.draw(g, labels=graph_labels_dict)
-    plt.show()
+    # nx.draw(g, labels=graph_labels_dict)
+    # plt.show()
     nodes_order = numerate_from_leafs_to_root(g, root)
 
     assert expected == count_all_children(g, nodes_order, root)[node]
