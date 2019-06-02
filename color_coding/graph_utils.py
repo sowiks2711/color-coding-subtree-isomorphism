@@ -1,7 +1,7 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 import itertools
-from typing import Set, Tuple, Iterator, List
+from typing import Set, Tuple, Iterator, List, FrozenSet
 import os
 
 dirname = os.path.dirname(__file__)
@@ -97,7 +97,7 @@ def numerate_from_root(graph: nx.Graph, source: int):
 def list_subsets_of_given_size(set, size: int):
     list_subsets = list(itertools.combinations(set, size))
     for l in list_subsets:
-        yield l
+        yield frozenset(l)
 
 
 def are_disjoint(t1: tuple, t2: tuple):
@@ -107,10 +107,11 @@ def are_disjoint(t1: tuple, t2: tuple):
 
 
 def pairs_of_sets(color_set: Set[int], size: int,
-                  size2: int) -> Iterator[Tuple[Set[int], Set[int]]]:
+                  size2: int) -> Iterator[Tuple[FrozenSet[int],
+                                                FrozenSet[int]]]:
     for s in list_subsets_of_given_size(color_set, size):
         for ss in list_subsets_of_given_size(set(color_set) - set(s), size2):
-            yield s, ss
+            yield frozenset(s), frozenset(ss)
 
 
 if __name__ == "__main__":

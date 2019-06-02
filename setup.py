@@ -1,7 +1,7 @@
 from setuptools import find_packages, setup
 
 setup(
-    name="sentinel_connectors",
+    name="iso-subtree-color-coding",
     packages=find_packages(),
     version="0.1.0",
     description="Color coding for subtree isomorphism project for Algorithmics\
