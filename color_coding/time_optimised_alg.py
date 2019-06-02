@@ -1,4 +1,6 @@
 import networkx as nx
+from random import randint
+from math import exp
 import numpy as np
 from typing import List, Dict, FrozenSet, Iterator, Tuple
 from pydantic import BaseModel
@@ -54,7 +56,7 @@ class SubtreeAnalizer():
         try:
             g_root = list(self._memory_array[self._colors][0, :]).index(True)
             return self._restore_mapping(g_root)
-        except ValueError:
+        except (ValueError, KeyError):
             return None
 
     def _restore_mapping(self, g_root):
@@ -139,26 +141,24 @@ class SubtreeAnalizer():
 
 
 class SubtreeAnalizerFactory():
-    def __init__(self, tree: nx.Graph, graph: nx.Graph,
-                 graph_colors: List[int]):
+    def __init__(self, tree: nx.Graph, graph: nx.Graph):
         self._tree = tree
         self._graph = graph
-        self._graph_colors = graph_colors
+        self._size = len(self._tree)
+        self._nodes_order = list(self._bottom_up_order(0))
+        self._children_count = self._count_all_children(self._nodes_order, 0)
 
-    def create(self, root: int) -> SubtreeAnalizer:
-        if (len(self._graph_colors) != len(self._graph)):
+    def create(self, graph_colors: List[int]) -> SubtreeAnalizer:
+        if (len(graph_colors) != len(self._graph)):
             raise ValueError(
                 "Graph colors mapping does not cover all graph vertices")
-        size = len(self._tree)
-        nodes_order = list(self._bottom_up_order(root))
-        children_count = self._count_all_children(nodes_order, root)
-        colors = frozenset(self._graph_colors)
-        mapping_restore = self._initialize_memory()
+        colors = frozenset(graph_colors)
+        mapping_restore = self._initialize_memory(graph_colors)
 
-        return SubtreeAnalizer(root, size, children_count, nodes_order,
-                               self._tree, self._graph,
-                               self._graph_colors, colors,
-                               mapping_restore)
+        return SubtreeAnalizer(
+            0, self._size, self._children_count, self._nodes_order,
+            self._tree, self._graph, graph_colors, colors, mapping_restore
+        )
 
     def _bottom_up_order(self, root: int) -> Iterator[int]:
         top_down = nx.bfs_tree(self._tree, source=root)
@@ -184,11 +184,11 @@ class SubtreeAnalizerFactory():
 
         return children_count
 
-    def _initialize_memory(self) -> Dict[FrozenSet, np.ndarray]:
+    def _initialize_memory(self, graph_colors) -> Dict[FrozenSet, np.ndarray]:
         iso_subtree = {}
         graph_size = len(self._graph)
         tree_size = len(self._tree)
-        colors = set(self._graph_colors)
+        colors = set(graph_colors)
         for c in colors:
             match_array = np.zeros((tree_size, graph_size),
                                    dtype=bool)
@@ -196,6 +196,22 @@ class SubtreeAnalizerFactory():
         for c in colors:
             for t in self._tree.nodes():
                 for v in self._graph.nodes:
-                    if self._graph_colors[v] == c:
+                    if graph_colors[v] == c:
                         iso_subtree[frozenset([c])][t, v] = True
         return iso_subtree
+
+
+def color_coding_subtree(tree, graph):
+    k = len(tree)
+    attempts = int(exp(k+2))
+    mapping = None
+    random_coloring = None
+    analizer_factory = SubtreeAnalizerFactory(tree, graph)
+    for i in range(attempts):
+        print(f"Attempt nr {i}", end='\r')
+        random_coloring = [randint(0, k) for i in range(len(graph))]
+        analizer = analizer_factory.create(random_coloring)
+        mapping = analizer.find_subtree()
+        if mapping is not None:
+            break
+    return mapping, random_coloring

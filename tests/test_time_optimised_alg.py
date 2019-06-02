@@ -131,3 +131,35 @@ def test_subtree_colorings(subtree_analizer):
         assert not s1 < s2
         assert not s2 < s1
         assert s1.union(s2) == superset
+
+
+@pytest.fixture
+def prepare_alg_input():
+    tree = nx.Graph()
+    tree.add_edges_from(
+        [
+            (0, 1), (0, 2), (2, 3), (2, 4)
+        ]
+    )
+    graph = nx.Graph()
+    graph.add_edges_from(
+        [
+             (0, 1), (0, 2), (0, 3), (0, 6), (1, 5),
+             (3, 4), (3, 5), (4, 5), (5, 6), (5, 7)
+        ]
+    )
+    return tree, graph
+
+
+@pytest.mark.parametrize(
+    "colors, expected",
+    [
+        ([0, 1, 2, 3, 4, 0, 1, 2], [3, 4, 0, 1, 2]),
+        ([0, 1, 2, 0, 4, 0, 3, 1], None),
+    ]
+)
+def test_optimal_alg(colors, expected, prepare_alg_input):
+    tree, graph = prepare_alg_input
+    analizer = SubtreeAnalizerFactory(tree, graph, colors).create(0)
+    mapping = analizer.find_subtree()
+    assert mapping == expected

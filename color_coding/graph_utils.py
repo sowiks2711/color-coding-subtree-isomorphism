@@ -1,7 +1,7 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 import itertools
-from typing import Set, Tuple, Iterator, List, Frozenset
+from typing import Set, Tuple, Iterator, List, FrozenSet
 import os
 
 dirname = os.path.dirname(__file__)
