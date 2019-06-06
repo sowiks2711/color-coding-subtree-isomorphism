@@ -8,6 +8,7 @@ from .graph_utils import (
     list_subsets_of_given_size,
     pairs_of_sets,
 )
+from pympler import asizeof
 
 
 class SubtreeData(BaseModel):
@@ -207,11 +208,17 @@ def color_coding_subtree(tree, graph):
     mapping = None
     random_coloring = None
     analizer_factory = SubtreeAnalizerFactory(tree, graph)
+    iters = 0
+    memory_usage = []
     for i in range(attempts):
+        iters = iters + 1
         print(f"Attempt nr {i}", end='\r')
         random_coloring = [randint(0, k) for i in range(len(graph))]
         analizer = analizer_factory.create(random_coloring)
         mapping = analizer.find_subtree()
+        memory_usage.append(asizeof.asizeof(analizer))
         if mapping is not None:
             break
-    return mapping, random_coloring
+    
+    mean_memory_usage = np. mean(np.array(memory_usage))
+    return mapping, random_coloring, iters, mean_memory_usage
