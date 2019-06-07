@@ -1,4 +1,5 @@
 import time as time
+from datetime import datetime
 import uuid
 import os
 import psutil
@@ -6,6 +7,7 @@ from typing import Tuple, Iterator
 import networkx as nx
 import random as rnd
 from color_coding.time_optimised_alg import color_coding_subtree
+import matplotlib.pyplot as plt
 # write function that for different sizes of tree and the same graph measures
 # time, space, iterations
 #   for graph without tree
@@ -67,23 +69,7 @@ def sparse_graph_without_copy(
             "Function supports only trees with max node degree higher than 2"
             )
 
-    graph = nx.Graph()
-    nodes_target = list(range(2, size))
-    nodes_pool = [0, 1]
-
-    graph.add_edge(0, 1)
-    for v in nodes_target:
-        while True:
-            len_n = len(nodes_pool)
-            if len_n == 0:
-                break
-            index = 0 if len_n == 1 else rnd.randint(0, len_n-1)
-            if graph.degree(nodes_pool[index]) >= degree:
-                nodes_pool.pop(index)
-            else:
-                graph.add_edge(nodes_pool[index], v)
-                nodes_pool.pop(index)
-                nodes_pool.append(v)
+    graph = nx.path_graph(size)
 
     return str(uuid.uuid4().hex), graph
 
@@ -103,6 +89,7 @@ def growing_trees_generator(
     for i in range(to_size - from_size):
         v = len(g)
         vv = rnd.randint(0, v-1)
+        g = g.copy()
         g.add_edge(v, vv)
         yield str(uuid.uuid4().hex), g
 
@@ -116,6 +103,7 @@ def growing_sparse_graphs_with_tree(
     yield id, g
 
     for i in range(from_size, to_size, 10):
+        g = g.copy()
         for j in range(10):
             v = len(g)
             vv = rnd.randint(0, v-1)
@@ -137,12 +125,13 @@ def growing_dense_graphs_with_tree(
             for k in range(int(len(g)/2)):
                 vv = rnd.randint(0, v-1)
                 g.add_edge(v, vv)
-            yield str(uuid.uuid4().hex), g
+        yield str(uuid.uuid4().hex), g
 
 
 def growing_graphs_without_tree(from_size: int, to_size: int, tree: nx.Graph):
     for i in range(from_size, to_size, 10):
         id, g = sparse_graph_without_copy(tree, i)
+        g = g.copy()
         yield id, g
 
 
@@ -155,6 +144,38 @@ def get_max_degree(graph: nx.Graph) -> int:
                        key=degree_extractor)[1]
 
     return graph_degree
+
+
+def save_result(tree, graph, mapping, colors, save):
+    graph_labels_dict = {}
+    nodes_order = list(graph.nodes)
+    for v in nodes_order:
+        graph_labels_dict[v] = v
+    tree_labels_dict = {}
+    for v in tree.nodes:
+        tree_labels_dict[v] = v
+    colors_mapping = [0] * len(graph)
+    for i in range(len(graph)):
+        colors_mapping[nodes_order[i]] = colors[i]
+
+    plt.subplot(121)
+    nx.draw(tree, labels=tree_labels_dict)
+
+    result_labels = {}
+    for v in graph.nodes:
+        if v in mapping:
+            result_labels[v] = f"{v},{mapping.index(v)}"
+        else:
+            result_labels[v] = v
+
+    plt.subplot(122)
+    nx.draw(graph, node_color=colors_mapping, labels=result_labels,
+            cmap=plt.cm.gist_rainbow)
+    if save:
+        plt.savefig("./results/fig" + str(hash(tree)) + "_" + str(hash(graph)))
+    else:
+        plt.show()
+    plt.clf()
 
 
 def report_performance(
@@ -171,37 +192,40 @@ def report_performance(
     graph_id, graph_g = graph
     graph_size = len(graph_g)
     tree_size = len(tree_g)
-    mapping, _, iters, mean_mem = color_coding_subtree(tree_g, graph_g)
-                       
-    process = psutil.Process(os.getpid())
+    mapping, colors, iters, mean_mem = color_coding_subtree(tree_g, graph_g)
+   
     time_meas = str(time.time() - start_time)
     is_success = True if mapping is not None else False
+    if mapping is not None:
+        save_result(tree_g, graph_g, mapping, colors, with_copy)
 
-    print(f"{tree_id}, {graph_id}, {tree_size}, {graph_size}, {time_meas}, {mean_mem}, {is_success}, {with_copy}, {is_dense_graph}, {iters}")
+    print(f"{tree_id},{graph_id},{tree_size},{graph_size},{time_meas},{mean_mem},{is_success},{with_copy},{is_dense_graph},{iters}")
 
 
 if __name__ == '__main__':
 
     start_tree_size = 4
-    end_tree_size = 7
+    end_tree_size = 9
 
     start_graph_size = 10
-    end_graph_size = 20
+    end_graph_size = 50
+    midle_graph_size = int((end_graph_size+start_graph_size)/2)
 
     trees = list(growing_trees_generator(start_tree_size, end_tree_size))
+
     last_tree = trees[len(trees)-1][1]
     dense_graph_with_copy = dense_graph_with_tree_copy(
         last_tree,
-        start_graph_size
+        midle_graph_size
     )
     sparse_g_with_copy = sparse_graph_with_tree_copy(
         last_tree,
-        start_graph_size
+        midle_graph_size
     )
 
     sparse_g_without_copy = sparse_graph_without_copy(
         trees[0][1],
-        start_graph_size
+        midle_graph_size
     )
 
     middle_tree = trees[int(len(trees)/2)]
@@ -210,7 +234,7 @@ if __name__ == '__main__':
 
     dense_graph_with_tree = dense_graph_with_tree_copy(
         last_tree,
-        start_graph_size
+        midle_graph_size
     )
 
     for tree in trees:
@@ -221,42 +245,53 @@ if __name__ == '__main__':
 
     sparse_graph_with_tree = sparse_graph_with_tree_copy(
         last_tree,
-        start_tree_size
+        midle_graph_size
     )
 
     for tree in trees:
         report_performance(tree, sparse_graph_with_tree, True, False)
-    # Test case 3: Growing trees, constant sparse graph without any tree copy
 
-    sparse_graph_with_tree = sparse_graph_without_copy(
-        last_tree,
-        start_graph_size
-    )
-
-    for tree in trees:
-        report_performance(tree, sparse_graph_with_tree, False, False)
-
-    # Test case 4: Constant tree, growing sparse graph without any tree copy
-
-    sparse_graphs_without_tree = growing_graphs_without_tree(10, 50,
-                                                             middle_tree[1])
-
-    for g in sparse_graphs_without_tree:
-        report_performance(middle_tree, g, False, False)
 
     # Test case 5: Constant tree, growing sparse graph with one or couple tree
     # copies
 
-    sparse_graphs_with_tree = growing_sparse_graphs_with_tree(10, 50,
-                                                              middle_tree[1])
+    sparse_graphs_with_tree = growing_sparse_graphs_with_tree(
+        start_graph_size,
+        end_graph_size,
+        middle_tree[1]
+    )
 
     for g in sparse_graphs_with_tree:
         report_performance(middle_tree, g, True, False)
 
     # Test case 6: Constant tree, growing dense graph with many tree copies
 
-    dense_graphs = growing_dense_graphs_with_tree(10, 50, middle_tree[1])
+    dense_graphs = growing_dense_graphs_with_tree(
+        start_graph_size,
+        end_graph_size,
+        middle_tree[1]
+    )
 
     for g in dense_graphs:
         report_performance(middle_tree, g, True, True)
 
+    # Test case 4: Constant tree, growing sparse graph without any tree copy
+
+    sparse_graphs_without_tree = growing_graphs_without_tree(
+        start_graph_size,
+        end_graph_size,
+        middle_tree[1]
+    )
+
+    for g in sparse_graphs_without_tree:
+        report_performance(middle_tree, g, False, False)
+
+    # Test case 3: Growing trees, constant sparse graph without any tree copy
+
+    sparse_graph_without_tree = sparse_graph_without_copy(
+        last_tree,
+        midle_graph_size
+    )
+
+    for tree in trees:
+        report_performance(tree, sparse_graph_without_tree, False, False)
