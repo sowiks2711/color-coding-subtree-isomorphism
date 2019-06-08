@@ -9,6 +9,7 @@ from .graph_utils import (
     pairs_of_sets,
 )
 from pympler import asizeof
+import matplotlib.pyplot as plt
 
 
 class SubtreeData(BaseModel):
@@ -222,3 +223,35 @@ def color_coding_subtree(tree, graph):
     
     mean_memory_usage = np. mean(np.array(memory_usage))
     return mapping, random_coloring, iters, mean_memory_usage
+
+
+def save_result(tree, graph, mapping, colors, save):
+    graph_labels_dict = {}
+    nodes_order = list(graph.nodes)
+    for v in nodes_order:
+        graph_labels_dict[v] = v
+    tree_labels_dict = {}
+    for v in tree.nodes:
+        tree_labels_dict[v] = v
+    colors_mapping = [0] * len(graph)
+    for i in range(len(graph)):
+        colors_mapping[nodes_order[i]] = colors[i]
+
+    plt.subplot(121)
+    nx.draw(tree, labels=tree_labels_dict)
+
+    result_labels = {}
+    for v in graph.nodes:
+        if v in mapping:
+            result_labels[v] = f"{v},{mapping.index(v)}"
+        else:
+            result_labels[v] = v
+
+    plt.subplot(122)
+    nx.draw(graph, node_color=colors_mapping, labels=result_labels,
+            cmap=plt.cm.gist_rainbow)
+    if save:
+        plt.savefig("./results/fig" + str(hash(tree)) + "_" + str(hash(graph)))
+    else:
+        plt.show()
+    plt.clf()

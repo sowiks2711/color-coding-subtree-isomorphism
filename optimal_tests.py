@@ -40,7 +40,7 @@ if __name__ == "__main__":
 
     print("@@@@Testy wydajnościowe duże@@@@")
     graph = nx.random_lobster(20, 0.75, 0.75)
-    trees = nx.nonisomorphic_trees(6)
+    trees = nx.nonisomorphic_trees(8)
     for tree in trees:
         mapping, coloring = color_coding_subtree(tree, graph)
         print()
@@ -49,3 +49,18 @@ if __name__ == "__main__":
             show_result(tree, graph, mapping, coloring)
         else:
             print("Not found.")
+
+# write function that for different sizes of tree and the same graph measures 
+# time, space, iterations
+#   for graph without tree
+#   for graph with one copy of tree
+#   for graph with many copies of tree
+# do the same for fixed tree and different sizes of graph
+# kilka przykładów
+
+# Do raportu
+# czas ze względu na mały i duży graf,
+# pamięć,
+# liczba iteracji,
+# dużo kopii w grafie, tylko jeden podgraf izomorficzny
+# duże grafy bez poddrzewa

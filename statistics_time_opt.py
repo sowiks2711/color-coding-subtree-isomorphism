@@ -6,7 +6,7 @@ import psutil
 from typing import Tuple, Iterator
 import networkx as nx
 import random as rnd
-from color_coding.time_optimised_alg import color_coding_subtree
+from color_coding.time_optimised_alg import color_coding_subtree,  save_result
 import matplotlib.pyplot as plt
 # write function that for different sizes of tree and the same graph measures
 # time, space, iterations
@@ -144,38 +144,6 @@ def get_max_degree(graph: nx.Graph) -> int:
                        key=degree_extractor)[1]
 
     return graph_degree
-
-
-def save_result(tree, graph, mapping, colors, save):
-    graph_labels_dict = {}
-    nodes_order = list(graph.nodes)
-    for v in nodes_order:
-        graph_labels_dict[v] = v
-    tree_labels_dict = {}
-    for v in tree.nodes:
-        tree_labels_dict[v] = v
-    colors_mapping = [0] * len(graph)
-    for i in range(len(graph)):
-        colors_mapping[nodes_order[i]] = colors[i]
-
-    plt.subplot(121)
-    nx.draw(tree, labels=tree_labels_dict)
-
-    result_labels = {}
-    for v in graph.nodes:
-        if v in mapping:
-            result_labels[v] = f"{v},{mapping.index(v)}"
-        else:
-            result_labels[v] = v
-
-    plt.subplot(122)
-    nx.draw(graph, node_color=colors_mapping, labels=result_labels,
-            cmap=plt.cm.gist_rainbow)
-    if save:
-        plt.savefig("./results/fig" + str(hash(tree)) + "_" + str(hash(graph)))
-    else:
-        plt.show()
-    plt.clf()
 
 
 def report_performance(
