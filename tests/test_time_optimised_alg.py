@@ -1,7 +1,8 @@
 import pytest
 import networkx as nx
 from color_coding.time_optimised_alg import (
-    SubtreeAnalizerFactory, SubtreeAnalizer, SubtreeData
+    SubtreeAnalizerFactory, SubtreeAnalizer, SubtreeData,
+    save_result
 )
 import numpy as np
 from unittest.mock import patch
@@ -22,8 +23,8 @@ two_edeges_t = nx.from_edgelist(
     ]
 )
 def test_initialize_memory(tree, graph, g_colors):
-    simple_tree_analizer = SubtreeAnalizerFactory(two_edeges_t, graph,
-                                                  g_colors).create(0)
+    simple_tree_analizer = SubtreeAnalizerFactory(two_edeges_t, graph
+                                                  ).create(g_colors)
     memory_dict = simple_tree_analizer._memory_array
     assert len(memory_dict) == len(set(g_colors))
     for key, arr in memory_dict.items():
@@ -37,7 +38,7 @@ def test_initialize_memory(tree, graph, g_colors):
     ]
 )
 def test_square_te_init(tree, graph, g_colors):
-    alg = SubtreeAnalizerFactory(two_edeges_t, square_g, g_colors).create(0)
+    alg = SubtreeAnalizerFactory(two_edeges_t, square_g).create(g_colors)
     memory_dict = alg._memory_array
     expected = {
         frozenset([0]): np.array(
@@ -66,7 +67,7 @@ def test_square_te_init(tree, graph, g_colors):
 
 @pytest.fixture
 def subtree_analizer() -> SubtreeAnalizer:
-    def mock_call(mock):
+    def mock_call(mock, colors):
         return {}
     with patch.object(
         SubtreeAnalizerFactory, "_initialize_memory",
@@ -80,7 +81,7 @@ def subtree_analizer() -> SubtreeAnalizer:
             ]
         )
         colors = list(range(10))
-        return SubtreeAnalizerFactory(tree, colors, colors).create(0)
+        return SubtreeAnalizerFactory(tree, colors).create(colors)
 
 
 def test_tree_analizer_size(subtree_analizer):
@@ -160,6 +161,8 @@ def prepare_alg_input():
 )
 def test_optimal_alg(colors, expected, prepare_alg_input):
     tree, graph = prepare_alg_input
-    analizer = SubtreeAnalizerFactory(tree, graph, colors).create(0)
+    analizer = SubtreeAnalizerFactory(tree, graph).create(colors)
     mapping = analizer.find_subtree()
+    if mapping is not None:
+        save_result(tree, graph, mapping, colors, True)    
     assert mapping == expected

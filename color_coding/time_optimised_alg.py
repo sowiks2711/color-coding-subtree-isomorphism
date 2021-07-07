@@ -8,6 +8,8 @@ from .graph_utils import (
     list_subsets_of_given_size,
     pairs_of_sets,
 )
+from pympler import asizeof
+import matplotlib.pyplot as plt
 
 
 class SubtreeData(BaseModel):
@@ -207,11 +209,49 @@ def color_coding_subtree(tree, graph):
     mapping = None
     random_coloring = None
     analizer_factory = SubtreeAnalizerFactory(tree, graph)
+    iters = 0
+    memory_usage = []
     for i in range(attempts):
+        iters = iters + 1
         print(f"Attempt nr {i}", end='\r')
         random_coloring = [randint(0, k) for i in range(len(graph))]
         analizer = analizer_factory.create(random_coloring)
         mapping = analizer.find_subtree()
+        memory_usage.append(asizeof.asizeof(analizer))
         if mapping is not None:
             break
-    return mapping, random_coloring
+    
+    mean_memory_usage = np. mean(np.array(memory_usage))
+    return mapping, random_coloring, iters, mean_memory_usage
+
+
+def save_result(tree, graph, mapping, colors, save):
+    graph_labels_dict = {}
+    nodes_order = list(graph.nodes)
+    for v in nodes_order:
+        graph_labels_dict[v] = v
+    tree_labels_dict = {}
+    for v in tree.nodes:
+        tree_labels_dict[v] = v
+    colors_mapping = [0] * len(graph)
+    for i in range(len(graph)):
+        colors_mapping[nodes_order[i]] = colors[i]
+
+    plt.subplot(121)
+    nx.draw(tree, labels=tree_labels_dict)
+
+    result_labels = {}
+    for v in graph.nodes:
+        if v in mapping:
+            result_labels[v] = f"{v},{mapping.index(v)}"
+        else:
+            result_labels[v] = v
+
+    plt.subplot(122)
+    nx.draw(graph, node_color=colors_mapping, labels=result_labels,
+            cmap=plt.cm.gist_rainbow)
+    if save:
+        plt.savefig("./results/fig" + str(hash(tree)) + "_" + str(hash(graph)))
+    else:
+        plt.show()
+    plt.clf()
